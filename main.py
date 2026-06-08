@@ -9,7 +9,6 @@ from utility import get_totale_amount,get_su_invoces,get_dateformat,priorty_ex_r
 from acc import colors,job_,tamps,drug_categories
 from flask_cors import CORS
 from bson import ObjectId
-import os
 app = Flask(__name__)
 app.secret_key='mysecret$#^%^&%^&*withmoreopss'
 
@@ -19,7 +18,9 @@ return render_template("sam.html",menu=menu,s=s,f=f,mid=mid)
 import cloudinary
 import cloudinary.uploader
 cloudinary.config(
-  
+    # cloud_name="djmdhqokw",
+    # api_key="811589763914498",
+    # api_secret="fn3f6SJpn_z9KBs_8vglZhrNzb0",
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
@@ -304,7 +305,7 @@ def root___6():
             nv["id"]=str(fx["_id"])
             nv["name"]=fx["drug_name"]
             nv["unitPrice"]=float(fx["price"])
-            nv["stock"]=get_totale_amount(fx["_id"])
+            nv["stock"]=5000#get_totale_amount(fx["_id"])
             _s.append(nv)
         s["s2"]=_s
 
@@ -1563,5 +1564,5 @@ def process_security_credential_update():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
   

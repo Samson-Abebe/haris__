@@ -3,7 +3,7 @@ from bson import ObjectId
 import os
 #https://gist.github.com/ScriptBytes/2c0b8658fe6e16467f697f76be06f7bd
 
-uri =os.getenv("MONGO_URI"),
+uri ="mongodb+srv://samsonabebe:xlzNQkseRg8M5Yy3@cluster0022.zcfqojs.mongodb.net/Haris__?retryWrites=true&w=majority"
 
 
 client = MongoClient(uri)
