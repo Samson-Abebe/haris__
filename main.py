@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template,send_file,session ,jsonify,Response,redirect,url_for,send_from_directory, abort
 import os
 from datetime import datetime, timedelta
-
 from maindb import re_mogo
 import re
 from support import get_menu,ceo,valid_departmnet
@@ -9,14 +8,10 @@ from utility import get_totale_amount,get_su_invoces,get_dateformat,priorty_ex_r
 from acc import colors,job_,tamps,drug_categories
 from flask_cors import CORS
 from bson import ObjectId
-app = Flask(__name__)
-app.secret_key='mysecret$#^%^&%^&*withmoreopss'
-
-"""
-return render_template("sam.html",menu=menu,s=s,f=f,mid=mid)
-"""
 import cloudinary
 import cloudinary.uploader
+app = Flask(__name__)
+app.secret_key=os.getenv("Flask_secret_key")
 cloudinary.config(
   
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
