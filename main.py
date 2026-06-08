@@ -18,9 +18,7 @@ return render_template("sam.html",menu=menu,s=s,f=f,mid=mid)
 import cloudinary
 import cloudinary.uploader
 cloudinary.config(
-    # cloud_name="djmdhqokw",
-    # api_key="811589763914498",
-    # api_secret="fn3f6SJpn_z9KBs_8vglZhrNzb0",
+  
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
@@ -37,7 +35,7 @@ def post_get():
  if request.method == 'POST':
             # Process GET request
             p=0
-            print("SAMSON")
+          
  elif request.method == 'GET':
             p=1  
  return p
@@ -52,7 +50,7 @@ def log():
     phone = request.form.get("phone")
     password = request.form.get("password")
 
-    print(f"Phone: {phone}, Password: {password}")
+   
     session.pop("pinfo", None)
     mon=re_mogo("job")
     phone = request.form.get("phone")
@@ -79,7 +77,7 @@ def log():
         return render_template("sam.html",menu=menu,s=s,f=f,mid=mid)
     else:
         con=True
-        print(con)
+      
         return render_template("login.html",con=con)
 
 
@@ -122,9 +120,9 @@ def root___1():
                         user = mon.find_one({"phone":phone})
 
                         if user:
-                            print("er=Email already existsEmail not found")
+                         
                         else:
-                            print("phone not found")
+                         
                             mon.insert_one(_data)
                             su="Email not found"
 
@@ -206,7 +204,7 @@ def root___3():
                     "cost_price":cost_price,
                     "date":get_time_number()
                 }
-                print(_data)
+           
                 mon.insert_one(_data)
 
             
@@ -361,7 +359,7 @@ def root___6():
             image_id = upload_result["public_id"]
 
             data["drugs"] = unique_drugs
-            print(data)
+          
             data["date1"]=get_time_number()
             data["doid"]=doid
             data["stage"]=1
@@ -415,7 +413,7 @@ def root___7():
                 colre_int+=1
         s["s1"]=s_
         s["s2"]=coler
-        print(s["s2"])
+     
 
 
         return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
@@ -530,7 +528,7 @@ def root___10():
                 nv["netTotal"]=float(fx["total_net"])
                 s_.append(nv)
               s["s1"]=s_
-              print(".............",s)
+             
             
               return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
     else:
@@ -602,7 +600,7 @@ def root___12():
                 nv["netTotal"]=float(fx["total_net"])
                 s_.append(nv)
               s["s1"]=s_
-              print(".............",s)
+            
             
               return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
     else:
@@ -638,7 +636,7 @@ def root___13():
                 nv["netTotal"]=float(fx["total_net"])
                 s_.append(nv)
               s["s1"]=s_
-              print(".............",s)
+            
             
               return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
     else:
@@ -675,7 +673,7 @@ def root___14():
                 nv["netTotal"]=float(fx["withholding_tax"])
                 s_.append(nv)
               s["s1"]=s_
-              print(".............",s)
+           
             
               return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
     else:
@@ -760,7 +758,7 @@ def root___16():
                       }
               s["s2"]=coler
              
-              print(".............",s)
+             
               return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
     else:
         return redirect(url_for("login"))
@@ -1181,18 +1179,18 @@ def pass___1():
     if decision_action == 'approve':
         # Put your database execution queries here:
         # e.g., db.execute("UPDATE invoices SET status='approved' WHERE id=%s", invoice_id)
-        print(f"Invoice {invoice_id} approved successfully.")
+      
         mon=re_mogo("invoices")
         nv=2
         dbd="date2"
         mv=mon.find_one( {"invoices":invoice_id},{"stage":1,"credit_type":1})
         ###this is chake the request is come form correct sorces or not
         if(mv["credit_type"]=='credit' and 3!=float(mv["stage"])):
-          print("from add min",valid_departmnet(1),"and",valid_departmnet(2))
+        
           if(valid_departmnet(1)):
             return False
         else:
-            print("form chashri",valid_departmnet(3))
+           
             if(valid_departmnet(3)):
             
               return False
@@ -1243,11 +1241,11 @@ def pass___2():
     if decision_action == 'approve':
         # Put your database execution queries here:
         # e.g., db.execute("UPDATE invoices SET status='approved' WHERE id=%s", invoice_id)
-        print(f"Invoice {invoice_id} approved successfully.")
+       
         mon=re_mogo("invoices")
       
         nv=3
-        mv=mon.find_one({"invoices":invoice_id},{"drugs":1})
+        mv=mon.find_one({"invoices":invoice_id},{"drugs":1})#and the valuse is not equles to 0
         crilance=False
         for fx in mv["drugs"]:  
           if(crilance_priorty_ex_reduction(fx["drug_id"],fx["quantity"])):
@@ -1256,7 +1254,7 @@ def pass___2():
             break
           
         if(crilance):
-            print("what is wrong with u ")
+         
             return jsonify({"status": "error", "message": "Stock is insufficient. Please check and approve before proceeding."}), 400
         for fx in mv["drugs"]:  
           priorty_ex_reduction(fx["drug_id"],fx["quantity"])
@@ -1298,7 +1296,7 @@ def pass___3():
     if not invoice_id or not decision_action:
         return jsonify({"status": "error", "message": "Missing necessary payload elements."}), 400
     if decision_action == 'Collected':
-        print(f"Invoice {invoice_id} approved successfully.")
+       
         mon=re_mogo("invoices")
         mon.update_one(
                     {"invoices":invoice_id},
@@ -1328,7 +1326,7 @@ def dispose_batch():
 
     batch_id = data.get("batchId")
 
-    print("Received batch:", batch_id)
+   
 
     mon=re_mogo("drug")
     mon.update_one(
@@ -1349,7 +1347,7 @@ def pass___17():
             return False
     data = request.get_json()
 
-    print(data)
+  
 
     staff_id = data.get("id")
     phone = data.get("phone")
@@ -1404,12 +1402,12 @@ def pass___19():
         
         mon=re_mogo("job")
         dd=date_to_timestamp(final_date)
-        print("blenas____",dd)
+       
         mon.update_one(
         {"phone":agent_phone},
         {"$set": {"commutionp":dd}}
         )
-        print(f"COMMISSION SETTLED: Agent={agent_phone}, Scope={start_date} to {final_date}, Paid={payout_sum} ETB")
+    
 
         return jsonify({
             "status": "success",
@@ -1418,7 +1416,7 @@ def pass___19():
         }), 200
 
     except Exception as e:
-        print(f"Database write exception: {str(e)}")
+     
         return jsonify({"status": "error", "message": "Internal persistence tracking system crash."}), 500
 
 #____________________________________therd party
@@ -1533,10 +1531,10 @@ def process_security_credential_update():
     mv=mon.find_one({"_id":ObjectId(session["o_t_t"]),"number":int(otp_code)},{"time":1,"phone":1})
     is_otp_valid =True
     if mv:
-        print("in the otp")
+     
         is_otp_valid =False
         if get_time_number()-mv["time"] > 260:
-            print("in the otp expired")
+          
             is_otp_valid =True
     
     mon.delete_one({"_id":ObjectId(session["o_t_t"])})
@@ -1558,7 +1556,7 @@ def process_security_credential_update():
         }), 200
 
     except Exception as db_error:
-        print(f"Exception raised during system storage update operations: {str(db_error)}")
+       
         return jsonify({"status": "error", "message": "Internal storage transaction failure execution error."}), 500
 
 
