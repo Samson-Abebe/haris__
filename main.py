@@ -115,6 +115,7 @@ def root___1():
                         user = mon.find_one({"phone":phone})
 
                         if user:
+                            pass#will add notifcation
                          
                         else:
                          
