@@ -1,0 +1,164 @@
+
+<!-- 1. Select2 CSS (Put this in your base.html head if possible, or here) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    /* Customizing Select2 to match your Tailwind/Slate theme */
+    .select2-container--default .select2-selection--single {
+        height: 46px !important;
+        padding: 8px 12px;
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+        background-color: #f8fafc80 !important; /* bg-slate-50/50 */
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #1e293b !important; /* text-slate-800 */
+        line-height: 28px !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+</style>
+
+<div class="w-full max-w-3xl mx-auto my-auto p-2">
+    <!-- Form Header -->
+    <div class="mb-6 text-center md:text-left">
+        <h2 class="text-xl font-bold text-slate-800">Register New Drug Stock</h2>
+        <p class="text-sm text-slate-500">Search and select a drug to record incoming provider stock.</p>
+           <button onclick="downloadPDF()">
+                        Download PDF
+                    </button>
+    </div>
+
+    <!-- Main Inventory Form -->
+    <form action="{{ f}}" method="POST" class="space-y-6 w-full">
+        
+        <!-- Row 1: Select2 Searchable Drug & Provider -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="drug_select" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 mr-1"></i> Search & Select Drug
+                </label>
+                <!-- Standard Select for Select2 -->
+                <select id="drug_select" name="drug_name" required class="w-full select2-searchable">
+                   
+                     
+                       {% for name,drug in s["1"].items() %}
+                            <option value="{{name }}">{{ drug }}</option>
+                        {% endfor %} 
+                </select>
+            </div>
+            
+            <div>
+                <label for="provider_name" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-truck-field text-slate-400 mr-1"></i> Name of Provider
+                </label>
+                <input type="text" id="provider_name" name="provider_name" required placeholder="e.g. Acme Pharma"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Row 2: Expiry & Amount -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="expiry_date" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-calendar-days text-slate-400 mr-1"></i> Expiry Date
+                </label>
+                <input type="date" id="expiry_date" name="expiry_date" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+
+            <div>
+                <label for="amount" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-boxes-stacked text-slate-400 mr-1"></i> Amount (Quantity)
+                </label>
+                <input type="number" id="amount" name="amount" required min="1" placeholder="e.g. 100"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Row 3: Cost Price -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="cost_price" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-hand-holding-dollar text-slate-400 mr-1"></i> Cost Price (Total)
+                </label>
+                <input type="number" id="cost_price" name="cost_price" required min="0" step="0.01" placeholder="0.00"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <button type="reset" class="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors cursor-pointer text-center">
+                Clear Form
+            </button>
+            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-sm transition-colors cursor-pointer text-center">
+                <i class="fa-solid fa-pills mr-1.5"></i> Register Stock
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- 2. Dependencies: jQuery & Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 on the drug dropdown
+        $('.select2-searchable').select2({
+            placeholder: "Search for a drug...",
+            allowClear: true,
+            width: '100%' // Ensures it fills the Tailwind grid column
+        });
+    });
+
+//-----------------------------------------------------------------------
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });
+}
+
+
+
+</script>

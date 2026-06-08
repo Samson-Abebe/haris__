@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Invoice Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Customer</h1>
+                <p class="text-sm text-slate-500">Customer Dashboard</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <button onclick="generateReport()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 shadow-sm shadow-indigo-100 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-file-pdf"></i> Generate Current Report
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 self-start"><i class="fa-solid fa-chart-pie text-indigo-500 mr-1.5"></i>Customer Volume Mix</h3>
+                <div class="w-full max-w-[220px]">
+                    <canvas id="salesPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+
+              
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between sm:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 text-white">
+                    <div>
+                        <span class="text-xs font-bold tracking-wider text-indigo-200 uppercase">Net Settled package</span>
+                        <h2 id="summary-net" class="text-4xl font-black text-white mt-1">0.00 ETB</h2>
+                    </div>
+                    <div class="text-xs text-indigo-200 mt-4 flex justify-between">
+                        <span>Active System Context Date: 2026</span>
+                        <span id="filtered-count" class="font-bold">Showing: 0 records</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+         
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1"></i> Quick Filter</label>
+                <div class="relative">
+                    <input type="text" id="filter-search" oninput="processDataFilters()" placeholder="Type matching sequence strings..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:bg-white">
+                    <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="report-target-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-4 px-6">Customer Name</th>
+                            <th class="py-4 px-6">Email</th>
+                            <th class="py-4 px-6">Phone</th>
+                            <th class="py-4 px-6">address</th>
+                         
+                            <th class="py-4 px-6">Description </th>
+                            <th class="py-4 px-6 text-right">Registere By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div id="table-empty-state" class="hidden p-12 text-center">
+                <i class="fa-solid fa-folder-open text-slate-300 text-4xl mb-3 block"></i>
+                <span class="text-sm font-medium text-slate-400">No records found matching current query parameters.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Server side data injected into JSON structure arrays loop
+        
+        const data  = {{ s["s1"] | tojson }};
+        const color_= {{ s["s2"] | tojson }};
+     
+        let salesChartInstance = null;
+
+        // Bootstraps application loops
+        document.addEventListener("DOMContentLoaded", () => {
+            initializePieChartMetrics();
+            processDataFilters();
+        });
+
+        // Filters source array data based on criteria
+        function processDataFilters() {
+            
+            const searchKeyword = document.getElementById('filter-search').value.toLowerCase().trim();
+            console.log("besat______")
+            const filteredData = data.filter(item => {
+                // 1. Evaluate Date Boundaries
+              
+
+                // 2. Evaluate Search Keywords Matrix across rows properties
+                if (searchKeyword) {
+                 
+                     const matchesSearch =
+                                item.CustomerName?.toLowerCase().includes(searchKeyword) ||
+                                item.Email?.toLowerCase().includes(searchKeyword) ||
+                                item.Phone?.toLowerCase().includes(searchKeyword) ||
+                                item.address?.toLowerCase().includes(searchKeyword) ||
+                                item.Description?.toLowerCase().includes(searchKeyword) ||
+                                item.Registereby?.toLowerCase().includes(searchKeyword);
+                    
+                    if (!matchesSearch) return false;
+                }
+                return true;
+            });
+
+            renderTableDOMRows(filteredData);
+            recalculateFinancialTotalsSummary(filteredData);
+            updatePieChartDataMix(filteredData);
+        }
+
+        // Renders dynamic components into active DOM layers
+        function renderTableDOMRows(recordsList) {
+            const tableBody = document.getElementById('ledger-rows-destination');
+            const emptyState = document.getElementById('table-empty-state');
+            tableBody.innerHTML = '';
+
+            if (recordsList.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            recordsList.forEach(item => {
+                const var_ = `
+                        <span 
+                            class="px-2 py-0.5 text-xs font-semibold rounded-full text-white"
+                            style="background-color: ${color_[item.RegistereBy]};"
+                        >
+                            ${item.RegistereBy}
+                        </span>
+                    `;
+ const rowTemplate = `
+    <tr class="hover:bg-slate-50/80 transition-colors">
+
+        <td class="py-4 px-6">
+            <div class="font-semibold text-slate-800">
+                ${item.CustomerName}
+            </div>
+        </td>
+
+        <td class="py-4 px-6 text-slate-600">
+            ${item.Email}
+        </td>
+
+        <td class="py-4 px-6 text-slate-600">
+            ${item.Phone}
+        </td>
+
+        <td class="py-4 px-6 text-slate-600">
+            ${item.address}
+        </td>
+
+        <td class="py-4 px-6 text-slate-500">
+            ${item.Description}
+        </td>
+
+        <td class="py-4 px-6 text-right font-semibold text-slate-700">
+            ${var_}
+        </td>
+
+    </tr>
+`;
+                tableBody.insertAdjacentHTML('beforeend', rowTemplate);
+            });
+        }
+
+        // Aggregates currency tallies logic dynamically
+        function recalculateFinancialTotalsSummary(recordsList) {
+            let netTotalSum = 0;
+            recordsList.forEach(i => netTotalSum += i.Amount);
+            // Reconstruct backing components formulas context logic backwards
+            // Net Total = Subtotal - Withholding(3%) -> Net = Subtotal * 0.97 -> Subtotal = Net / 0.97
+            const grossSubtotal = netTotalSum / 0.97;
+            const withholdingTax = grossSubtotal * 0.03;
+
+         
+            document.getElementById('summary-net').innerText = recordsList.length+" " +"records";
+            document.getElementById('filtered-count').innerText = `Showing: ${recordsList.length} records`;
+        }
+
+        // Configures ChartJS metrics context rules
+        function initializePieChartMetrics() {
+            const ctx = document.getElementById('salesPieChart').getContext('2d');
+            let da=[]
+            let lab=[]
+            let bg=[]
+            for (let key in color_) {
+                        console.log("from1",key);
+                        lab.push(key) 
+                        bg.push(color_[key])   
+                        da.push(0)    // a, b, c
+                        console.log(color_[key]);   // 10, 20, 30
+                    }
+            salesChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels:lab,
+                    datasets: [{
+                        data: da,
+                        backgroundColor:bg,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Updates pie chart datasets dynamically
+        function updatePieChartDataMix(recordsList) {
+          
+            let intt={}
+              for (let key in color_) {
+                      intt[key]=0
+                    }
+
+
+            recordsList.forEach(item => {
+                
+                intt[item.RegistereBy]=intt[item.RegistereBy]+1;
+             
+            });
+            let fin=[]
+                for (let key in intt) {
+                      fin.push(intt[key])
+                      console.log("what____",fin)
+                    }
+
+            if (salesChartInstance) {
+                salesChartInstance.data.datasets[0].data =fin;
+                salesChartInstance.update();
+            }
+        }
+
+        // Clean Print Output Document Generator Integration Rule
+              function generateReport() {
+            downloadPDF()
+        }
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });
+}
+    </script>
+
+    <style>
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; p: 0 !important; }
+            button, label, #salesPieChart, .select2-container, #filter-start-date, #filter-end-date, #filter-search, .grid-cols-1 {
+                display: none !important;
+            }
+            #report-target-table { width: 100% !important; border: 1px solid #cbd5e1 !important; }
+            th { background-color: #f1f5f9 !important; color: #000000 !important; }
+        }
+    </style>
+</body>
+</html>

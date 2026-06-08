@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Commission Ledger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div class="bg-white shadow-md rounded-xl p-5 border border-slate-200">
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight">
+        {{ s["name"] }}
+    </h1>
+
+    <div class="mt-2 flex items-center gap-3">
+        <span class="text-sm font-medium text-slate-500">Agent Commission</span>
+
+        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold text-sm">
+            {{ s["per"] }}%
+        </span>
+    </div>
+</div><br/>
+                  <button onclick="downloadPDF()">
+                        Download PDF
+                    </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-calendar mr-1"></i> Start Date</label>
+                <input type="date" id="filter-start-date" onchange="applyCommissionFilters()" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-calendar mr-1"></i> End Date</label>
+                <input type="date" id="filter-end-date" onchange="applyCommissionFilters()" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:bg-white">
+            </div>
+
+
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-wallet mr-1"></i> Payout Status</label>
+                <select id="filter-status-select" onchange="applyCommissionFilters()" class="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+                    <option value="all">All Records</option>
+                    <option value="paid">Paid Only</option>
+                    <option value="unpaid">Unpaid Only</option>
+                </select>
+            </div>
+
+            <div class="bg-indigo-900 text-white p-3 rounded-xl border border-indigo-950 shadow-inner flex flex-col justify-between h-[68px]">
+                <span class="text-[10px] font-bold tracking-wider text-indigo-200 uppercase">Filtered Tally</span>
+                <div id="live-total-box" class="text-lg font-black tracking-tight text-right text-emerald-400">0.00 ETB</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="commission-main-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-4 px-6">Agent Name</th>
+                            <th class="py-4 px-6">Phone Number</th>
+                            <th class="py-4 px-6 text-right">Total Sales Vol</th>
+                            <th class="py-4 px-6 text-right">Commission Rate</th>
+                            <th class="py-4 px-6 text-right">Commission Earned</th>
+                            <th class="py-4 px-6">Allocation Date</th>
+                            <th class="py-4 px-6 text-center">Settlement Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commission-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                    <tfoot>
+                        <tr class="bg-indigo-50/50 border-t-2 border-indigo-100 font-bold text-slate-900">
+                            <td colspan="4" class="py-5 px-6 text-base font-black text-indigo-950">Total Combined Commission Pool:</td>
+                            <td id="table-total-commission" class="py-5 px-6 text-right text-base font-black text-indigo-600 font-mono">0.00 ETB</td>
+                            <td colspan="2" class="bg-indigo-50/20"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div id="commission-empty-state" class="hidden p-16 text-center">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-money-bill-transfer text-xl"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-700">No Commissions Match Parameters</h3>
+                <p class="text-xs text-slate-400 mt-1">Adjust your date scopes, status selection arrays or contact filtering drops.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backing source lifecycle object items dataset array matrix matching system context timeframe 2026
+        const commissionDataset =  {{ s["s1"] | tojson }};
+    
+
+        document.addEventListener("DOMContentLoaded", () => {
+         
+            applyCommissionFilters();
+        });
+
+        // Extracts unique phone configurations to build selector nodes safely
+     
+
+        // Processing mathematical evaluation cycles across table array structures
+        function applyCommissionFilters() {
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
+         ;
+            const statusFilter = document.getElementById('filter-status-select').value;
+
+            // Filtration constraint mapping passes
+            const filteredData = commissionDataset.filter(item => {
+                if (startDate && item.date < startDate) return false;
+                if (endDate && item.date > endDate) return false;
+           
+                if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+                return true;
+            });
+
+            renderCommissionTableGrid(filteredData);
+        }
+
+        // Transforms current collection into matching template fragments layout outputs
+        function renderCommissionTableGrid(recordsList) {
+            const tbody = document.getElementById('commission-rows-destination');
+            const emptyState = document.getElementById('commission-empty-state');
+            const tableElement = document.getElementById('commission-main-table');
+            
+            tbody.innerHTML = '';
+            let cumulativeCommissionSum = 0;
+
+            if (recordsList.length === 0) {
+                emptyState.classList.remove('hidden');
+                tableElement.classList.add('hidden');
+                document.getElementById('live-total-box').innerText = "0.00 ETB";
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tableElement.classList.remove('hidden');
+
+            recordsList.forEach(item => {
+                // Calculate dynamic structural variable metric parameters formula inline
+                const calculatedCommission = item.salesAmount * (item.ratePercentage / 100);
+                cumulativeCommissionSum += calculatedCommission;
+
+                // Configure state badges colors
+                const statusBadge = item.status === 'paid'
+                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200"><i class="fa-solid fa-circle-check"></i> Paid</span>`
+                    : `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-rose-50 text-rose-700 rounded-md border border-rose-200"><i class="fa-solid fa-circle-pause"></i> Unpaid</span>`;
+                 const slipBadge = item.slipUrl 
+                    ? `<a href="slip/${item.slipUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors">
+                        <i class="fa-solid fa-receipt"></i> View Slip
+                       </a>`
+                    : `<span class="text-xs text-slate-400 italic">No Slip Attached</span>`;
+                const rowTemplate = `
+                    <tr class="hover:bg-slate-50/60 transition-colors">
+                        <td class="py-4 px-6 font-bold text-slate-900">${item.agentName}</td>
+                        <td class="py-4 px-6 font-mono text-slate-500">${item.phone}</td>
+                        <td class="py-4 px-6 text-right font-medium font-mono text-slate-600">${item.salesAmount.toFixed(2)} ETB</td>
+                        <td class="py-4 px-6 text-right font-bold text-slate-500">${slipBadge}</td>
+                        <td class="py-4 px-6 text-right font-black text-slate-900 font-mono">${calculatedCommission.toFixed(2)} ETB</td>
+                        <td class="py-4 px-6 text-slate-500 font-medium whitespace-nowrap">${item.date}</td>
+                        <td class="py-4 px-6 text-center">${statusBadge}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowTemplate);
+            });
+
+            // Write totals down inside summary positions tracking elements counters cleanly
+            document.getElementById('table-total-commission').innerText = cumulativeCommissionSum.toFixed(2) + " ETB";
+            document.getElementById('live-total-box').innerText = cumulativeCommissionSum.toFixed(2) + " ETB";
+        }
+
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });
+}
+
+
+//-----------------------------------------------------------------------
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });}
+    </script>
+</body>
+</html>

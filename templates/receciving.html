@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Approval Queue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Approval Manager</h1>
+                <p class="text-sm text-slate-500">Review pending orders, verify, or authorize draft updates.</p>
+            </div>
+            <div class="mt-3 sm:mt-0">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 text-xs font-bold rounded-full border border-amber-200">
+                    <i class="fa-solid fa-circle-exclamation animate-pulse"></i> Authorization Role: Administrator
+                </span>
+            </div>
+        </div>
+
+        <div id="status-alert" class="hidden p-4 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition-all duration-300">
+            <i id="alert-icon" class="fa-solid"></i>
+            <span id="alert-text"></span>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="approval-queue-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-4 px-6">Invoice Ref</th>
+                            <th class="py-4 px-6">Customer / Details</th>
+                            <th class="py-4 px-6">Salesperson</th>
+                            <th class="py-4 px-6">Receipt Slip</th>
+            
+                            <th class="py-4 px-6">Total Amount</th>
+                            <th class="py-4 px-6 text-center">Decision Actions Matrix</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approval-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="queue-empty-state" class="hidden p-16 text-center">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+                    <i class="fa-solid fa-circle-check text-2xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Queue Completely Clear</h3>
+                <p class="text-xs text-slate-400 mt-1">All standard transaction records have been processed and pushed forward.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data with new loops properties for salesperson and slip url strings
+        const pendingInvoices = {{ s["s1"] | tojson }};
+    
+
+        document.addEventListener("DOMContentLoaded", renderApprovalQueue);
+
+        // Loops through collection array to produce structural layout templates
+        function renderApprovalQueue() {
+            const tbody = document.getElementById('approval-rows-destination');
+            const emptyState = document.getElementById('queue-empty-state');
+            tbody.innerHTML = '';
+
+            if (pendingInvoices.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('approval-queue-table').classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            document.getElementById('approval-queue-table').classList.remove('hidden');
+
+            pendingInvoices.forEach(invoice => {
+                const badge = invoice.creditType === 'cash'
+                    ? `<span class="px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full">Cash Sale</span>`
+                    : `<span class="px-2 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 rounded-full">Credit</span>`;
+
+                // If slipUrl is missing, handle graceful fallback state text
+                const slipBadge = invoice.slipUrl 
+                    ? `<a href="slip/${invoice.slipUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors">
+                        <i class="fa-solid fa-receipt"></i> View Slip
+                       </a>`
+                    : `<span class="text-xs text-slate-400 italic">No Slip Attached</span>`;
+
+                const rowMarkup = `
+                    <tr id="row-${invoice.id}" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-4 px-6 font-mono font-bold text-slate-600">${invoice.id}</td>
+                        <td class="py-4 px-6">
+                            <div class="font-semibold text-slate-800">${invoice.customerName}</div>
+                            <div class="text-xs text-slate-400">${invoice.cp}</div>
+                        </td>
+                      
+                          <td class="py-4 px-6">
+                            <div class="font-semibold text-slate-800">${invoice.salespersonName}</div>
+                            <div class="text-xs text-slate-400">${invoice.sp}</div>
+                        </td>
+                        <td class="py-4 px-6">${slipBadge}</td>
+                       
+                        <td class="py-4 px-6 font-bold text-slate-900">${invoice.netTotal.toFixed(2)} ETB</td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="submitApprovalDecision('${invoice.id}', 'approve')" 
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">
+                                    <i class="fa-solid fa-check"></i> Approve
+                                </button>
+                                <button onclick="submitApprovalDecision('${invoice.id}', 'reject')" 
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                                    <i class="fa-solid fa-xmark"></i> Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowMarkup);
+            });
+        }
+
+        // Asynchronously dispatches decisions over to your Flask App Endpoint
+        function submitApprovalDecision(invoiceId, actionType) {
+            const targetUrl = "/passroot___10"; 
+
+            const dataPayload = {
+                invoice_id: invoiceId,
+                decision_action: actionType
+            };
+
+            fetch(targetUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(dataPayload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Server engine returned bad tracking status code parameters.");
+                }
+                return response.json();
+            })
+            .then(jsonResponse => {
+                showAlertNotification(`Invoice record (${invoiceId}) has been successfully marked as ${actionType}d!`, 'success');
+                
+                const index = pendingInvoices.findIndex(item => item.id === invoiceId);
+                if (index !== -1) {
+                    pendingInvoices.splice(index, 1);
+                }
+                
+                renderApprovalQueue();
+            })
+            .catch(error => {
+                console.error("Transmission Failure Error:", error);
+                showAlertNotification(`Failed to dispatch request token for ${invoiceId}. Please try again.`, 'error');
+            });
+        }
+
+        function showAlertNotification(message, statusType) {
+            const alertBox = document.getElementById('status-alert');
+            const alertIcon = document.getElementById('alert-icon');
+            const alertText = document.getElementById('alert-text');
+
+            alertBox.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-rose-50', 'text-rose-800', 'border-rose-200');
+
+            if (statusType === 'success') {
+                alertBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+                alertIcon.className = "fa-solid fa-circle-check text-emerald-600";
+            } else {
+                alertBox.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+                alertIcon.className = "fa-solid fa-circle-exclamation text-rose-600";
+            }
+
+            alertText.innerText = message;
+            
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

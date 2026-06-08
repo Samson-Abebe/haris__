@@ -1,0 +1,50 @@
+-finshd work 
+%pending work
+#note
+[
+ -expens
+ -pttycash
+ -
+
+
+
+
+
+]jump work 
+the totale worke that passed{
+    -notification}
+
+_________________________________________
+the format = return render_template("sam.html",menu=menu,s=s,f=f,mid=mid)
+menu=get_menu()
+mid=whech mid is pisplay 
+s=the data passed
+f=the link
+
+
+
+{
+admin:0934190091
+cheriy:0934190092
+store:0934190090
+sales:0934190094
+agent:0934190093
+}
+
+
+
+
+
+
+
+
+5/21/2026 #aimd to do all form input first without system identitiy and menu go to work
+ -+add user
+ -+add druges
+ -+add stock
+5/22/2026
+ -+add banck account
+ -[]add pttycash 
+ -+add customer 
+ -menu
+ -start the engine

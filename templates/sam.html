@@ -1,0 +1,446 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Responsive Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for clean modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FIX: SEPARATED CLEAN OUTSIDE CSS -->
+    <style type="text/css">
+        /* Base Application Layout Styles */
+        .app-body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header Navbar Styles */
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            height: 4rem;
+            min-height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            z-index: 30;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .navbar-brand-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mobile-hamburger {
+            color: #475569;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .mobile-hamburger:hover {
+            color: #4f46e5;
+            background-color: #f1f5f9;
+        }
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #4f46e5;
+        }
+        .logout-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .logout-button:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Navigation Sidebar Panel Styles */
+        .sidebar-nav {
+            background-color: #0f172a;
+            color: #cbd5e1;
+            width: 16rem;
+            position: fixed;
+            top: 4rem; /* Below Navbar */
+            bottom: 0;
+            left: 0;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid #1e293b;
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Hidden layout control state for mobile viewports */
+        .sidebar-closed {
+            transform: translateX(-100%);
+        }
+        .sidebar-mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.4);
+            z-index: 10;
+        }
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0%;
+            overflow-y: auto;
+            padding: 1rem 0.75rem;
+        }
+        .sidebar-section-heading {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Menu List Item & Dropdown Accordion Item Actions */
+        .menu-item-link, .menu-item-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            text-align: left;
+            color: #cbd5e1;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+        }
+        .menu-item-link:hover, .menu-item-btn:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+        .menu-item-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .menu-icon-default {
+            color: #94a3b8;
+            width: 1.25rem;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        .menu-item-link:hover .menu-icon-default, 
+        .menu-item-btn:hover .menu-icon-default {
+            color: #818cf8;
+        }
+        .submenu-list {
+            padding-left: 2.25rem;
+            padding-right: 0.5rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+            background-color: rgba(2, 6, 23, 0.4);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .submenu-item-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+        .submenu-item-link:hover {
+            color: #ffffff;
+            background-color: #1e293b;
+        }
+
+        /* High-Contrast Notification Badges */
+        .badge-rose {
+            background-color: #f43f5e;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+        }
+        .badge-indigo {
+            background-color: #6366f1;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+        }
+        .arrow-icon-transition {
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: transform 0.2s;
+        }
+
+        /* Lower Sidebar Profile Placement Footer Card */
+        .sidebar-footer-profile {
+            padding: 1rem;
+            border-top: 1px solid #1e293b;
+            background-color: rgba(2, 6, 23, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .avatar-placeholder {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 9999px;
+            background-color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Central Workspace Workspace Areas */
+        .main-content-panel {
+            flex: 1 1 0%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .breadcrumb-header {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .main-content-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            flex: 1 1 0%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+        .content-icon-frame {
+            width: 4rem;
+            height: 4rem;
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Screen Breakpoint Adapters (Media Queries replacing hidden Tailwind layers) */
+        @media (min-width: 768px) {
+            .sidebar-nav {
+                position: static;
+                transform: translateX(0);
+            }
+            .main-content-panel {
+                padding: 2rem;
+            }
+        }
+        
+        /* Helper classes for JS transitions */
+        .hidden { display: none !important; }
+        .rotate-180 { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="app-body">
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="navbar">
+        <div class="navbar-brand-group">
+            <button id="mobile-menu-btn" class="mobile-hamburger md:hidden">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            <div class="brand-logo-container">
+               
+                <span>Haris <span style="color: #334155; font-weight: 500;">Pharmaceuticals Import</span></span>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="window.location.href='/'" class="logout-button">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span class="hidden sm:inline" style="margin-left: 0.25rem;">Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN BODY WRAPPER -->
+    <div style="display: flex; flex: 1 1 0%; overflow: hidden; position: relative;">
+
+        <!-- 2. SIDEBAR NAVIGATION -->
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" class="sidebar-mobile-overlay hidden"></div>
+
+        <aside id="sidebar" class="sidebar-nav sidebar-closed">
+            <div class="sidebar-menu-list">
+                <span class="sidebar-section-heading">Navigation</span>
+
+              
+
+                <!-- Menu Item 2 (With Submenu & Notifications) -->
+                 {% for name,val in menu.items() %}
+
+
+                  <!-- "Report":{
+        "submenu":["Sales","Commission"],
+        "icon":"fa-solid fa-file-lines menu-icon-default",
+        "noofn":False},
+                          -->
+                      
+                <div class="submenu-container">
+                    <button onclick="toggleSubmenu(this)" class="menu-item-btn">
+                        <div class="menu-item-content">
+                           <i class="{{ val['icon'] }}"></i>
+                            <span>{{name}}</span>
+                        </div>
+                        <!-- notification start -->
+                     <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                {% if val["noofn"] %}
+                                    <span class="badge-rose">{{ val["noofn"] }}</span>
+                                {% endif %}
+                                <i class="fa-solid fa-chevron-down arrow-icon-transition arrow-icon"></i>
+                            </div>
+                        <!--notification end -->
+                    </button>
+                    <!-- Submenu Items -->
+                    <div class="submenu-list hidden">
+                        {% for name_ in val["submenu"] %}
+                        <a href="/{{name_}}"  class="submenu-item-link">{{name_}}</a>
+                         {%endfor%}
+                    </div>
+                </div>
+                  {% endfor %} 
+                
+             
+
+              
+            </div>
+
+            <!-- Sidebar Footer User Profile Info -->
+          <div class="sidebar-footer-profile">
+
+    <div class="avatar-placeholder">HP</div>
+
+    <div style="overflow: hidden;">
+        <h4 style="font-size: 0.875rem; font-weight: 500; color: #ffffff; margin: 0;">
+            {{ session.pinfo.fname }}
+        </h4>
+
+        <span style="font-size: 0.75rem; color: #64748b; display: block;">
+            {{ session.pinfo.dep_ }}
+        </span>
+
+        <a href="tel:+251912345678"
+           style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; display: block; margin-top: 4px;">
+            Contact Developer
+        </a>
+    </div>
+
+</div>
+        </aside>
+
+        <!-- 3. MIDDLE AREA (MAIN CONTENT) -->
+        <main class="main-content-panel">
+            <div style="margin-bottom: 1.5rem;">
+                <div class="breadcrumb-header">Current View</div>
+                <h1 id="content-title" style="font-size: 1.875rem; font-weight: 700; color: #0f172a;">
+                   {{ s["cons"]}}
+                </h1>
+            </div>
+
+            <!-- Display Area Card Container -->
+          <div class="main-content-card" style="display: block; justify-content: start; align-items: start; min-height: fit-content;">
+    {% include mid %}
+    {%include 'notifications.html'%}
+</div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- JAVASCRIPT FOR INTERACTIONS -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const contentTitle = document.getElementById('content-title');
+      
+
+        function toggleMobileSidebar() {
+            sidebar.classList.toggle('sidebar-closed');
+            overlay.classList.toggle('hidden');
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
+        overlay.addEventListener('click', toggleMobileSidebar);
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            const arrow = button.querySelector('.arrow-icon');
+            
+            submenu.classList.toggle('hidden');
+            
+            if (submenu.classList.contains('hidden')) {
+                arrow.classList.remove('rotate-180');
+            } else {
+                arrow.classList.add('rotate-180');
+            }
+        }
+
+        document.querySelectorAll('.submenu-list a, .sidebar-menu-list > a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768 && !sidebar.classList.contains('sidebar-closed')) {
+                    toggleMobileSidebar();
+                }
+            });
+        });
+
+        // function updateActiveContent(_menuName,menuName) {
+        //     contentTitle.textContent = "samson/"+menuName;
+           
+        // }
+    </script>
+</body>
+</html>

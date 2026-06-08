@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Invoice Records Archives</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Invoices Registry</h1>
+                <p class="text-sm text-slate-500">Historical archive of cleared transaction logs.</p>
+                   <button onclick="downloadPDF()">
+                        Download PDF
+                    </button>
+            </div>
+            <div class="mt-3 sm:mt-0">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full border border-emerald-200">
+                    <i class="fa-solid fa-shield text-emerald-600"></i> Mode: Read-Only Archive Ledger
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    <i class="fa-solid fa-calendar-days mr-1 text-slate-400"></i> Approved From (Start Date)
+                </label>
+                <input type="date" id="archive-start-date" onchange="filterArchiveRecordsByInterval()" 
+                    class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 font-mono rounded-lg outline-none focus:border-indigo-500 focus:bg-white cursor-pointer font-bold">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    <i class="fa-solid fa-calendar-check mr-1 text-slate-400"></i> Approved To (End Date)
+                </label>
+                <input type="date" id="archive-end-date" onchange="filterArchiveRecordsByInterval()" 
+                    class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 font-mono rounded-lg outline-none focus:border-indigo-500 focus:bg-white cursor-pointer font-bold">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="approval-queue-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-4 px-6">Invoice Ref</th>
+                            <th class="py-4 px-6">Customer / Details</th>
+                            <th class="py-4 px-6">Salesperson</th>
+                            <th class="py-4 px-6">Receipt Slip</th>
+                            <th class="py-4 px-6">Total Amount</th>
+                            <th class="py-4 px-6 text-center">Approved Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approval-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="queue-empty-state" class="hidden p-16 text-center">
+                <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                    <i class="fa-solid fa-calendar-xmark text-xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">No Matching Archives Located</h3>
+                <p class="text-xs text-slate-400 mt-1">No historical invoices match the selected approved interval filter bounds.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Let Flask serialize your template array safe data down to frontend context
+        const pendingInvoices = {{ s["s1"] | tojson }};
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderApprovalQueue(pendingInvoices);
+        });
+
+        // Loop engine generating semantic table components
+        function renderApprovalQueue(recordsList) {
+            const tbody = document.getElementById('approval-rows-destination');
+            const emptyState = document.getElementById('queue-empty-state');
+            tbody.innerHTML = '';
+
+            if (recordsList.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('approval-queue-table').classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            document.getElementById('approval-queue-table').classList.remove('hidden');
+
+            recordsList.forEach(invoice => {
+                const slipBadge = invoice.slipUrl 
+                    ? `<a href="slip/${invoice.slipUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors">
+                        <i class="fa-solid fa-receipt"></i> View Slip
+                       </a>`
+                    : `<span class="text-xs text-slate-400 italic">No Slip Attached</span>`;
+
+                const displayedDate = invoice.approvedDate ? invoice.approvedDate : 'N/A';
+
+                const rowMarkup = `
+                    <tr id="row-${invoice.id}" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-4 px-6 font-mono font-bold text-slate-600">${invoice.id}</td>
+                        <td class="py-4 px-6">
+                            <div class="font-semibold text-slate-800">${invoice.customerName}</div>
+                            <div class="text-xs text-slate-400">${invoice.cp}</div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-semibold text-slate-800">${invoice.salespersonName}</div>
+                            <div class="text-xs text-slate-400">${invoice.sp}</div>
+                        </td>
+                        <td class="py-4 px-6">${slipBadge}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">${invoice.netTotal.toFixed(2)} ETB</td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 font-mono font-bold text-xs text-slate-600 border border-slate-200 rounded-md">
+                                <i class="fa-regular fa-calendar text-[10px] text-slate-400"></i> ${displayedDate}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowMarkup);
+            });
+        }
+
+        // Performs matching evaluation sequences over selected target date interval arrays
+        function filterArchiveRecordsByInterval() {
+            const startDate = document.getElementById('archive-start-date').value;
+            const endDate = document.getElementById('archive-end-date').value;
+            
+            // Filter your master dataset based on date bounding logic conditions
+            const isolatedMatches = pendingInvoices.filter(invoice => {
+                // If invoice doesn't have an approved date, skip it unless both filters are clear
+                if (!invoice.approvedDate) return !startDate && !endDate;
+
+                // Evaluate interval requirements dynamically
+                if (startDate && invoice.approvedDate < startDate) return false;
+                if (endDate && invoice.approvedDate > endDate) return false;
+                
+                return true;
+            });
+
+            renderApprovalQueue(isolatedMatches);
+        }
+
+
+
+//-----------------------------------------------------------------------
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });}
+    </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Configuration Panel</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header Section -->
+        <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Staff & Department Configurations</h1>
+                <p class="text-sm text-slate-500">Modify phone indexes, adjust active sessions, configure commission agent rates, and submit bulk structural row updates.</p>
+            </div>
+        </div>
+
+        <!-- Master Global Submission Form Context Wrapper -->
+        <form action="/staff/update-bulk" method="POST" class="space-y-4">
+            
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="staff-edit-table">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="py-4 px-6">Name</th>
+                                <th class="py-4 px-6">Phone Number (+251)</th>
+                                <th class="py-4 px-6">Department</th>
+                                <th class="py-4 px-6 text-center">Active Session State</th>
+                                <th class="py-4 px-6">Rate Allocation</th>
+                                <th class="py-4 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                            <!-- Dynamic markup injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Global Form Save Trigger Action -->
+       
+        </form>
+    </div>
+
+    <!-- Interface Controller Logic Processing Scripts -->
+    <script>
+        // Backing source array data mockups using valid +251 formatting baselines
+        const staffDataset = {{ s["s1"] | tojson }};
+ 
+
+        document.addEventListener("DOMContentLoaded", renderConfigurationTableGrid);
+
+        function renderConfigurationTableGrid() {
+            const tbody = document.getElementById('staff-rows-destination');
+            tbody.innerHTML = '';
+
+            staffDataset.forEach((staff, index) => {
+                
+                // Check if department string matches "sales(agent)"
+                const isSalesAgent = staff.department.toLowerCase().trim() === 'sales(agent)';
+
+                // Conditional Element: Render rate input field IF NOT a sales(agent)
+                const rateFieldTemplate = isSalesAgent
+        ? `
+            <div class="relative rounded-lg shadow-sm max-w-[120px]">
+                <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    name="rate"
+                    value="${Number(staff.ratePercentage || 0).toFixed(1)}"
+                    class="w-full pl-3 pr-8 py-1.5 text-sm bg-white border border-slate-200 text-slate-800 rounded-lg font-mono outline-none focus:border-indigo-500 text-right">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 font-bold text-xs">
+                    %
+                </div>
+            </div>
+        `
+        : `
+            <span class="text-xs text-slate-400 italic font-medium bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                No Rate Applied
+            </span>
+        `;
+
+    const rowMarkup = `
+        <tr class="hover:bg-slate-50/40 transition-colors">
+
+            <!-- Hidden ID -->
+            <input type="hidden"
+                   name="staff[${index}][id]"
+                   value="${staff.id}">
+
+            <!-- Identity -->
+            <td class="py-4 px-6">
+                <div class="font-bold text-slate-900">
+                    ${staff.name || ''}
+                </div>
+            </td>
+
+            <!-- Phone -->
+            <td class="py-4 px-6">
+                <input
+                    type="tel"
+                    name="phone"
+                    value="${staff.phone || ''}"
+                    pattern="^\\+251[79]\\d{8}$"
+                    placeholder="+2519XXXXXXXX"
+                    title="Please enter a valid Ethiopian phone number (e.g. +251911234567)"
+                    required
+                    class="px-3 py-1.5 text-sm font-mono bg-white border border-slate-200 text-slate-800 rounded-lg outline-none focus:border-indigo-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500 w-full max-w-[210px]">
+            </td>
+
+            <!-- Department -->
+            <td class="py-4 px-6 text-slate-600 font-medium whitespace-nowrap capitalize">
+                <input
+                    type="text"
+                    name="staff[${index}][department]"
+                    value="${staff.department}"
+                    readonly
+                    tabindex="-1"
+                    class="px-2 py-1 text-xs font-bold bg-slate-100 border border-slate-200 text-slate-600 rounded-md outline-none max-w-[120px] select-none uppercase tracking-tight">
+            </td>
+
+            <!-- Session Status -->
+            <td class="py-4 px-6">
+                <div class="flex items-center justify-center gap-4">
+
+                    <label class="inline-flex items-center cursor-pointer gap-1 text-xs font-semibold text-slate-700">
+                        <input
+                            type="radio"
+                            name="staff[${index}][session]"
+                            value="on"
+                            ${staff.sessionActive ? 'checked' : ''}
+                            class="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500 accent-indigo-600 cursor-pointer">
+                        <span>ON</span>
+                    </label>
+
+                    <label class="inline-flex items-center cursor-pointer gap-1 text-xs font-semibold text-slate-400">
+                        <input
+                            type="radio"
+                            name="staff[${index}][session]"
+                            value="off"
+                            ${!staff.sessionActive ? 'checked' : ''}
+                            class="w-4 h-4 text-slate-400 border-slate-300 focus:ring-slate-400 accent-slate-500 cursor-pointer">
+                        <span>OFF</span>
+                    </label>
+
+                </div>
+            </td>
+
+            <!-- Rate -->
+            <td class="py-4 px-6">
+                ${rateFieldTemplate}
+            </td>
+
+            <!-- Action Button -->
+            <td class="py-4 px-6">
+                <button
+                    type="button"
+                    onclick="triggerIndividualRowEdit(this)"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                    <i class="fa-solid fa-user-gear"></i>
+                    Edit Row Info
+                </button>
+            </td>
+
+        </tr>
+    `;
+
+                tbody.insertAdjacentHTML('beforeend', rowMarkup);
+            });
+        }
+
+        // Action routing fallback for individual updates
+     async function triggerIndividualRowEdit(btn) {
+    const row = btn.closest('tr');
+
+    const phoneInput = row.querySelector('input[name="phone"]');
+
+    if (!phoneInput.checkValidity()) {
+        phoneInput.reportValidity();
+        return;
+    }
+
+    const data = {
+        id: row.querySelector('input[name$="[id]"]')?.value || '',
+        phone: row.querySelector('input[name="phone"]')?.value || '',
+        department: row.querySelector('input[name$="[department]"]')?.value || '',
+        session: row.querySelector('input[name$="[session]"]:checked')?.value || '',
+        rate: row.querySelector('input[name$="rate"]')?.value || ''
+    };
+
+    try {
+        const response = await fetch('/passroot17', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        alert(result.message);
+
+    } catch (error) {
+        console.error(error);
+        alert('Request failed');
+    }
+    location.reload();
+}
+    </script>
+</body>
+</html>

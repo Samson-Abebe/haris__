@@ -1,0 +1,84 @@
+<div class="w-full max-w-3xl mx-auto my-auto p-2">
+    <!-- Form Header -->
+    <div class="mb-6 text-center md:text-left">
+        <h2 class="text-xl font-bold text-slate-800">Register New Drug Stock</h2>
+        <p class="text-sm text-slate-500">Enter the medication details below to add it to the pharmacy inventory.</p>
+    </div>
+
+    <!-- Main Inventory Form -->
+    <form action="{{f}}" method="POST" class="space-y-6 w-full">
+        
+        <!-- Row 1: Drug Name & Generic Name -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="drug_name" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-capsules text-slate-400 mr-1"></i> Drug / Brand Name
+                </label>
+                <input type="text" id="drug_name" name="drug_name" required placeholder="e.g. Amoxicillin or Panadol"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+            
+            <div>
+                <label for="generic_name" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-dna text-slate-400 mr-1"></i> Generic Name / Active Ingredient
+                </label>
+                <input type="text" id="generic_name" name="generic_name" placeholder="e.g. Acetaminophen"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Row 2: Pharmacy Group Category Selection -->
+        <div>
+            <label for="pharmacy_group" class="block text-sm font-semibold text-slate-700 mb-2">
+                <i class="fa-solid fa-layer-group text-slate-400 mr-1"></i> Pharmacy Therapeutic Group
+            </label>
+            <div class="relative">
+                <select id="pharmacy_group" name="pharmacy_group_id" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none appearance-none cursor-pointer">
+                    <option value="" disabled selected>Select therapeutic drug group</option>
+                    <option value="1">Central Nervous System (CNS)</option>
+                    <option value="2">Anti-Infectives</option>
+                    <option value="3">Gastrointestinal System</option>
+                    <option value="4">Dermatologic</option>
+                    <option value="5">Cardiovascular System</option>
+                    <option value="6">Analgesics & Anti-Inflammatory</option>
+                    <option value="7">Endocrine System</option>
+                    <option value="8">Genitourinary System</option>
+                    <option value="9">Ophthalmic</option>
+                    <option value="10">Respiratory System</option>
+                    <option value="11">Hematologic System</option>
+                    <option value="12">Immunological & Vaccines</option>
+                </select>
+                <!-- Custom drop-down arrow indicator to fit Tailwind custom forms style -->
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Stock Quantity & Expiry Date -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="quantity" class="block text-sm font-semibold text-slate-700 mb-2">
+                   <i class="fa-solid fa-dollar-sign text-slate-400 mr-1"></i> Price
+                </label>
+                <input type="number" id="quantity" name="quantity" required min="0" placeholder="e.g. 500"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+
+      
+        </div>
+
+        <!-- Submit Button Row -->
+        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <button type="reset" 
+                class="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors cursor-pointer text-center">
+                Clear Entry
+            </button>
+            <button type="submit" 
+                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors cursor-pointer text-center">
+                <i class="fa-solid fa-pills mr-1.5"></i> Register Stock Item
+            </button>
+        </div>
+    </form>
+</div>

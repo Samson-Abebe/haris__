@@ -1,0 +1,172 @@
+<!-- Custom Style Overrides to make Select2 match your Tailwind UI perfectly -->
+<style>
+    .select2-container--default .select2-selection--single {
+        background-color: rgba(248, 250, 252, 0.5) !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.5rem !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #1e293b !important;
+        padding-left: 1rem !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 42px !important;
+        right: 10px !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        padding-right: 30px !important;
+    }
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #4f46e5 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 2px #e0e7ff !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+        overflow: hidden !important;
+    }
+    .select2-search__field {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.375rem !important;
+        padding: 6px 12px !important;
+        outline: none !important;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important;
+    }
+</style>
+
+<div class="w-full max-w-3xl mx-auto my-auto p-2">
+    <!-- Form Header -->
+    <div class="mb-6 text-center md:text-left">
+        <h2 class="text-xl font-bold text-slate-800">Register Bank Account</h2>
+        <p class="text-sm text-slate-500">Provide bank account details below to establish financial channels for transactions.</p>
+    </div>
+
+    <!-- Main Bank Registration Form -->
+    <form action="{{f}}" method="POST" class="space-y-6 w-full">
+        
+        <!-- Row 1: Searchable Bank Name & Account Name -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="bank_select" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-building-columns text-slate-400 mr-1"></i> Bank Name
+                </label>
+                <!-- Searchable Dropdown with Ethiopian Banks -->
+                <select id="bank_select" name="bank_name" required class="w-full">
+                    <option value="" disabled selected>Search Ethiopian bank...</option>
+                    <option value="Commercial Bank of Ethiopia">Commercial Bank of Ethiopia (CBE)</option>
+                    <option value="Awash Bank">Awash International Bank</option>
+                    <option value="Dashen Bank">Dashen Bank</option>
+                    <option value="Abyssinia Bank">Bank of Abyssinia</option>
+                    <option value="Wegagen Bank">Wegagen Bank</option>
+                    <option value="United Bank">Hibret Bank (United)</option>
+                    <option value="Nib International Bank">Nib International Bank</option>
+                    <option value="Cooperative Bank of Oromia">Cooperative Bank of Oromia (Coopbank)</option>
+                    <option value="Lion International Bank">Lion International Bank</option>
+                    <option value="Zemen Bank">Zemen Bank</option>
+                    <option value="Oromia Bank">Oromia Bank</option>
+                    <option value="Bunna Bank">Bunna International Bank</option>
+                    <option value="Berhan Bank">Berhan International Bank</option>
+                    <option value="Abay Bank">Abay Bank</option>
+                    <option value="Addis International Bank">Addis International Bank</option>
+                    <option value="Enat Bank">Enat Bank</option>
+                    <option value="Global Bank Ethiopia">Global Bank Ethiopia (Ahadu)</option>
+                    <option value="Amhara Bank">Amhara Bank</option>
+                    <option value="Tsehay Bank">Tsehay Bank</option>
+                    <option value="Gadaa Bank">Gadaa Bank</option>
+                    <option value="Siinqee Bank">Siinqee Bank</option>
+                    <option value="Shabelle Bank">Shabelle Bank</option>
+                    <option value="Hijra Bank">Hijra Bank (Interest-Free)</option>
+                    <option value="ZamZam Bank">ZamZam Bank (Interest-Free)</option>
+                    <option value="Development Bank of Ethiopia">Development Bank of Ethiopia (DBE)</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="account_name" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-id-card text-slate-400 mr-1"></i> Account Holder Name
+                </label>
+                <input type="text" id="account_name" name="account_name" required placeholder="e.g. Pharmacy Main Account"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Row 2: Account Number & Account Type -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="account_number" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-hashtag text-slate-400 mr-1"></i> Account Number
+                </label>
+                <input type="text" id="account_number" name="account_number" required placeholder="e.g. 10002345678"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+
+            <div>
+                <label for="account_type" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-wallet text-slate-400 mr-1"></i> Account Type
+                </label>
+                <div class="relative">
+                    <select id="account_type" name="account_type" required
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select type</option>
+                        <option value="Current/Checking">Current / Checking</option>
+                        <option value="Savings">Savings</option>
+                        <option value="Business">Business Prime</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: SWIFT/BIC Code (Optional) & Initial Balance -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="swift_code" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-globe text-slate-400 mr-1"></i> SWIFT / BIC Code <span class="text-xs text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input type="text" id="swift_code" name="swift_code" placeholder="e.g. CEBETAAA"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none uppercase">
+            </div>
+
+            <div>
+                <label for="initial_balance" class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-money-bill-wave text-slate-400 mr-1"></i> Opening Balance (ETB)
+                </label>
+                <input type="number" id="initial_balance" name="initial_balance" required min="0" step="0.01" placeholder="0.00"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Submit Button Row -->
+        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <button type="reset" 
+                class="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors cursor-pointer text-center">
+                Clear fields
+            </button>
+            <button type="submit" 
+                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors cursor-pointer text-center">
+                <i class="fa-solid fa-landmark mr-1.5"></i> Save Account
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Initialize Select2 for the Bank Search Field -->
+<script>
+    $(document).ready(function() {
+        $('#bank_select').select2({
+            placeholder: "Search Ethiopian bank...",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
