@@ -100,10 +100,10 @@
             dropdown.innerHTML = "";
 
             // Filtering evaluation cycle
-            const matches = medicineDatabase.filter(item => {
-                return item.name.toLowerCase().includes(input) || item.sku.toLowerCase().includes(input);
-            });
-
+        const matches = medicineDatabase.filter(item => {
+    return (item.name || '').toLowerCase().includes(input) ||
+           (item.sku || '').toLowerCase().includes(input);
+});
             if (matches.length === 0) {
                 dropdown.innerHTML = `<div class="p-4 text-xs text-slate-400 text-center italic">No medicinal assets found matching search criteria</div>`;
                 dropdown.classList.remove("hidden");

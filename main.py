@@ -292,14 +292,39 @@ def root___6():
         
         # { id: "101", name: "Amoxicillin 500mg", unitPrice: 12.50, stock: 45 },
         _s=[]
-        mon=re_mogo("_drug")
-        mv=mon.find()
+        mon=re_mogo("drug")
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        docs=mon.find({
+            "amount": {"$ne": 0},
+            "expiry_date": {"$gt": today}
+        },{"amount":1,"drug_id":1})
+        mon={}
+       # print("chake1",list(docs))
+        for mo_ in docs:
+            if mo_["drug_id"] in mon:
+                mon[mo_["drug_id"]]=mon[mo_["drug_id"]]+float(mo_["amount"])
+            else:
+                mon[mo_["drug_id"]]=float(mo_["amount"])
+        mon_=re_mogo("_drug")
+     
+        object_ids = [ObjectId(x) for x in mon]
+        mv= mon_.find({
+            "_id": {"$in":object_ids}
+        })
+      
+        #slect by the drug that is no zero and not expired 
+        #then the -=_drug_id:amount
+        #then produce the qurey 
+        #find all drugs and disply
+     
+
         for fx in mv:
             nv={}
             nv["id"]=str(fx["_id"])
             nv["name"]=fx["drug_name"]
             nv["unitPrice"]=float(fx["price"])
-            nv["stock"]=5000#get_totale_amount(fx["_id"])
+            nv["stock"]=mon[str(fx["_id"])]#get_totale_amount(fx["_id"])
             _s.append(nv)
         s["s2"]=_s
 
@@ -685,7 +710,7 @@ def root___15():
     menu=ceo(f)
     mid="exp.html"
     s={}
-    s["cons"]="Expired/Expired bellow 60d" 
+    s["cons"]="Expired/Expired bellow 90d" 
     if(menu):
    
 
@@ -1559,4 +1584,5 @@ def process_security_credential_update():
 
 if __name__ == "__main__":
     pass
+     #app.run(debug=True)
   
