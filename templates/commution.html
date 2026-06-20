@@ -49,7 +49,7 @@
             </div>
 
             <div class="bg-indigo-900 text-white p-3 rounded-xl border border-indigo-950 shadow-inner flex flex-col justify-between h-[68px]">
-                <span class="text-[10px] font-bold tracking-wider text-indigo-200 uppercase">Filtered Tally</span>
+                <span class="text-[10px] font-bold tracking-wider text-indigo-200 uppercase">Sales  Total Values</span>
                 <div id="live-total-box" class="text-lg font-black tracking-tight text-right text-emerald-400">0.00 ETB</div>
             </div>
         </div>
@@ -142,6 +142,7 @@
             
             tbody.innerHTML = '';
             let cumulativeCommissionSum = 0;
+            let _cumulativeCommissionSum=0;
 
             if (recordsList.length === 0) {
                 emptyState.classList.remove('hidden');
@@ -156,7 +157,9 @@
             recordsList.forEach(item => {
                 // Calculate dynamic structural variable metric parameters formula inline
                 const calculatedCommission = item.salesAmount * (item.ratePercentage / 100);
+                const _calculatedCommission=  item.salesAmount ;
                 cumulativeCommissionSum += calculatedCommission;
+                _cumulativeCommissionSum += _calculatedCommission;
 
                 // Configure state badges colors
                 const statusBadge = item.status === 'paid'
@@ -183,7 +186,7 @@
 
             // Write totals down inside summary positions tracking elements counters cleanly
             document.getElementById('table-total-commission').innerText = cumulativeCommissionSum.toFixed(2) + " ETB";
-            document.getElementById('live-total-box').innerText = cumulativeCommissionSum.toFixed(2) + " ETB";
+            document.getElementById('live-total-box').innerText = _cumulativeCommissionSum.toFixed(2) + " ETB";
         }
 
 function downloadPDF() {

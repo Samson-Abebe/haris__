@@ -160,8 +160,11 @@ def root___2():
                         "price":quantity,
                         "date":date
                     }
+                    ch=mon.find_one({"drug_name":drug_name},{"_id":1})
+                    if not ch:
+                        mon.insert_one(_data)
 
-                    mon.insert_one(_data)
+                    
                     return redirect(url_for("root___2"))
             return render_template("sam.html",f=f,menu=menu,s=s,mid=mid)
     else:
@@ -196,7 +199,7 @@ def root___3():
                     "drug_id":drug_id,
                     "provider_name":provider_name,
                     "expiry_date":expiry_date,
-                    "amount":amount,
+                    "amount":float(amount),
                     "cost_price":cost_price,
                     "date":get_time_number()
                 }
@@ -277,7 +280,7 @@ def root___6():
     s["cons"]="Sales/Sales"
     if(menu):
         mon=re_mogo("customer")
-        mv=mon.find({}, {"customer_name":1,"_id":1})
+        mv=mon.find({"doid":session["pinfo"]["_id"]}, {"customer_name":1,"_id":1})
         _s={}
         for fx in mv:
             _s[str(fx["_id"])]=fx["customer_name"]
@@ -411,7 +414,7 @@ def root___7():
     if(menu):
         mon=re_mogo("drug")
         mon_=re_mogo("_drug")
-        mv=mon.find({"disposal_date": {"$exists": False}},{"_id":0})
+        mv=mon.find({"disposal_date": {"$exists": False}, "amount": { "$gt": 0 }},{"_id":0})
         colre_int=0
         coler={}
         s_=[]
@@ -493,13 +496,13 @@ def root___9():
         colre_int=0
         for fx in mv:
             nv={}
-            mv_=mon_.find_one({"_id":ObjectId(fx["doid"])},{"fname":1,"phone":1})
+            mv_=mon_.find_one({"_id":ObjectId(fx["doid"])},{"phone":1})
             nv["CustomerName"]=fx["customer_name"]
             nv["Phone"]=mv_["phone"]
             nv["Email"]=fx["email"]
             nv["address"]=fx["address"]
             nv["Description"]=fx["notes"]
-            rb=mv_["fname"]+mv_["phone"]
+            rb=mv_["phone"]
             nv["RegistereBy"]=rb
             s_.append(nv)
             if rb in coler:
@@ -719,11 +722,13 @@ def root___15():
         mon=re_mogo("drug")
         mon_=re_mogo("_drug")
         s_=[]
+   
         mv=mon.find({
         "expiry_date": {
                     "$lt": future_date.strftime("%Y-%m-%d")
                 },
-        "disposal_date": {"$exists": False}
+        "disposal_date": {"$exists": False},
+         "amount": { "$gt": 0 }
             },{"_id":1,"drug_id":1,"expiry_date":1,"amount":1,"cost_price":1,"date":1})
         for fx in mv:
             mv_=mon_.find_one({"_id":ObjectId(fx["drug_id"])},{"drug_name":1})
@@ -996,7 +1001,7 @@ def root___22():
     menu=ceo(f)
     mid="commution_.html"
     s={}
-    s["cons"]="Report/Report Salestal" 
+    s["cons"]="Report/Report Sales" 
     if(menu):
           mon=re_mogo("invoices")
           mon_=re_mogo("job")
@@ -1111,6 +1116,86 @@ def root___24():
     else:
         return redirect(url_for("login"))
 
+@app.route('/Exhausted batch',methods=['GET',"POST"])
+def root___25():
+    jp=post_get()
+    f="/Exhausted batch"
+    menu=ceo(f)
+    mid="dis_stock.html"
+    s={}
+    s["cons"]="Product/Exhausted batch" 
+    if(menu):
+        mon=re_mogo("drug")
+        mon_=re_mogo("_drug")
+        mv=mon.find({"disposal_date": {"$exists": False}, "amount": { "$lt": 1 }},{"_id":0})
+        colre_int=0
+        coler={}
+        s_=[]
+        for fx in mv:
+            nv={}
+            mv_=mon_.find_one({"_id":ObjectId(fx["drug_id"])},{"drug_name":1,"generic_name":1,"price":1})
+            nv["Name"]=mv_["drug_name"]
+            nv["genericname"]=mv_["generic_name"]
+            nv["providername"]=fx["provider_name"]
+            nv["expiry"]=fx["expiry_date"]
+            nv["Registereddate"]=get_dateformat(fx["date"])
+            nv["price"]=mv_["price"]
+            nv["costprice"]=fx["cost_price"]
+            nv["Amount"]=int(fx["amount"])
+            s_.append(nv)
+            if mv_["drug_name"] in coler:
+                pass
+            else:
+                coler[mv_["drug_name"]]=colors[colre_int]
+                colre_int+=1
+        s["s1"]=s_
+        s["s2"]=coler
+     
+
+
+        return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
+    else:
+        return redirect(url_for("login"))
+
+
+@app.route('/Disposed',methods=['GET',"POST"])
+def root___26():
+    jp=post_get()
+    f="/Disposed"
+    menu=ceo(f)
+    mid="exp_.html"
+    s={}
+    s["cons"]="Expired/Disposed" 
+    if(menu):
+   
+
+        today = datetime.now()
+        future_date = today + timedelta(days=90)
+        mon=re_mogo("drug")
+        mon_=re_mogo("_drug")
+        s_=[]
+   
+        mv=mon.find({
+        "expiry_date": {
+                    "$lt": future_date.strftime("%Y-%m-%d")
+                },
+        "disposal_date": {"$exists": True},
+         "amount": { "$gt": 0 }
+            },{"_id":1,"drug_id":1,"expiry_date":1,"amount":1,"cost_price":1,"date":1})
+        for fx in mv:
+            mv_=mon_.find_one({"_id":ObjectId(fx["drug_id"])},{"drug_name":1})
+            nv={}
+            nv["batchId"]=get_dateformat(fx["date"])
+            nv["drugName"]=mv_["drug_name"]
+            nv["stockQty"]=float(fx["amount"])
+            nv["expiryDate"]=fx["expiry_date"]
+            nv["unitCost"]=fx["cost_price"]
+            nv["id_"]=str(fx["_id"])
+            s_.append(nv)
+        s["s1"]=s_
+        return render_template("sam.html",f=f,s=s,menu=menu,mid=mid)
+    else:
+        return redirect(url_for("login"))
 
 
 
@@ -1121,6 +1206,7 @@ def slip(id):
   
     sales_collection=re_mogo("invoices")
     sale = sales_collection.find_one({"_id": ObjectId(id)})
+    sale["date1"]=get_dateformat(sale["date1"])
   
     
     customer_collection=re_mogo("customer")
@@ -1175,16 +1261,6 @@ def slip(id):
         drugs=drugs
     )
   
-
-
-
-
-
-
-
-
-
-
 @app.route('/passroot___10', methods=['POST'])
 def pass___1():
     # Parse incoming raw JSON transmission requests packets strings mapping
@@ -1240,10 +1316,6 @@ def pass___1():
         "processed_id": invoice_id,
         "resulting_state": decision_action
     }), 200
-
-
-
-
 
 @app.route('/passroot___12', methods=['POST'])
 def pass___2():
@@ -1583,6 +1655,7 @@ def process_security_credential_update():
 
 
 if __name__ == "__main__":
-    pass
+    
      #app.run(debug=True)
+     pass
   

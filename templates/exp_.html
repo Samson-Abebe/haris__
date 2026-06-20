@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expired Medication Inventory Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Expired Product Disposal</h1>
+
+                <button onclick="downloadPDF()">
+                        Download PDF
+                    </button>
+            </div>
+            <div class="mt-3 sm:mt-0 flex gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-800 text-xs font-bold rounded-full border border-rose-200">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Action Required
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Flagged Batches</span>
+                <h2 id="metric-total" class="text-3xl font-black text-slate-800 mt-1">0</h2>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-500">Expired Status Count</span>
+                <h2 id="metric-expired" class="text-3xl font-black text-rose-600 mt-1">0</h2>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-500">Near Expiry Count</span>
+                <h2 id="metric-near" class="text-3xl font-black text-amber-600 mt-1">0</h2>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm bg-gradient-to-br from-rose-900 to-slate-900 text-white">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-200">Estimated Dead Stock Value</span>
+                <h2 id="metric-value" class="text-2xl font-black mt-1">0.00 ETB</h2>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1"></i> Filter By Drug Name, Batch, or Manufacturer</label>
+                <div class="relative">
+                    <input type="text" id="inventory-search" oninput="processInventoryFilters()" placeholder="Search active flagged products..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:bg-white">
+                    <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5"><i class="fa-solid fa-filter mr-1"></i> Expiry Status Filter</label>
+                <select id="status-select-filter" onchange="processInventoryFilters()" class="w-full p-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+                    <option value="all">Show All Rows</option>
+                    <option value="expired">Critically Expired Only</option>
+                    <option value="near_expiry">Near Expiry (Within 90 Days)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="inventory-data-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-4 px-6">Batch Date</th>
+                            <th class="py-4 px-6">Medication / Drug Name</th>
+                     
+                            <th class="py-4 px-6">Quantity Left</th>
+                            <th class="py-4 px-6">Expiration Date</th>
+                       
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-rows-destination" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="inventory-empty-state" class="hidden p-16 text-center">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">No Hazardous Stock Found</h3>
+                <p class="text-xs text-slate-400 mt-1">All current inventory matches compliance criteria parameters cleanly.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data payload containing expired context metrics mapping matching 2026 system timeframe
+        const drugInventoryData =  {{ s["s1"] | tojson }};
+   
+
+        // Active baseline calculation current timeline target context: 2026-05-29
+           const CURRENT_SYSTEM_DATE = new Date();
+    
+
+        document.addEventListener("DOMContentLoaded", () => {
+            processInventoryFilters();
+        });
+
+        function processInventoryFilters() {
+            const keyword = document.getElementById('inventory-search').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('status-select-filter').value;
+
+            const structuredRows = drugInventoryData.map(item => {
+                const expiryObj = new Date(item.expiryDate);
+                let status = "ok";
+                
+                if (expiryObj < CURRENT_SYSTEM_DATE) {
+                    status = "expired";
+                } else {
+                    // Calculate residual remaining time distance interval delta
+                    const timeDifference = expiryObj.getTime() - CURRENT_SYSTEM_DATE.getTime();
+                    const daysRemaining = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                    
+                    if (daysRemaining <= 90) {
+                        status = "near_expiry";
+                    }
+                }
+                return { ...item, calculatedStatus: status };
+            });
+
+            // Filter collection arrays based on choices configurations
+            const filteredData = structuredRows.filter(item => {
+                // Apply Search query pattern checks
+                if (keyword && !item.drugName.toLowerCase().includes(keyword)) {
+                    return false;
+                }
+
+                // Apply Status drop-down constraints
+                if (statusFilter !== 'all' && item.calculatedStatus !== statusFilter) {
+                    return false;
+                }
+
+                // Exclude any remaining healthy stocks fields not fitting categories scope
+                return item.calculatedStatus === 'expired' || item.calculatedStatus === 'near_expiry';
+            });
+
+            renderInventoryDOM(filteredData);
+            updateMetricsDashboard(structuredRows);
+        }
+
+        function renderInventoryDOM(records) {
+            const tbody = document.getElementById('inventory-rows-destination');
+            const emptyState = document.getElementById('inventory-empty-state');
+            const tableElement = document.getElementById('inventory-data-table');
+            
+            tbody.innerHTML = '';
+
+            if (records.length === 0) {
+                emptyState.classList.remove('hidden');
+                tableElement.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tableElement.classList.remove('hidden');
+
+            records.forEach(item => {
+                let statusBadge = "";
+                if (item.calculatedStatus === 'expired') {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-bold bg-rose-100 text-rose-700 rounded-lg border border-rose-200 block text-center"><i class="fa-solid fa-skull-crossbones mr-1"></i> Critical Expired</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-bold bg-amber-100 text-amber-700 rounded-lg border border-amber-200 block text-center"><i class="fa-solid fa-hourglass-half mr-1"></i> Near Expiry</span>`;
+                }
+
+                const totalDeadValue = item.stockQty * item.unitCost;
+
+                const rowTemplate = `
+                    <tr id="row-${item.batchId}" class="hover:bg-slate-50/60 transition-colors">
+                        <td class="py-4 px-6 font-mono font-bold text-slate-500">${item.batchId}</td>
+                        <td class="py-4 px-6 font-semibold text-slate-900">${item.drugName}</td>
+                    
+                        <td class="py-4 px-6 font-bold text-slate-700">${item.stockQty} units</td>
+                        <td class="py-4 px-6 font-mono font-medium text-slate-600">${item.expiryDate}</td>
+                       
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowTemplate);
+            });
+        }
+
+        function updateMetricsDashboard(allRows) {
+            let expiredCounter = 0;
+            let nearCounter = 0;
+            let combinedValueSum = 0;
+
+            allRows.forEach(item => {
+                if (item.calculatedStatus === 'expired') {
+                    expiredCounter++;
+                    combinedValueSum += (item.stockQty * item.unitCost);
+                } else if (item.calculatedStatus === 'near_expiry') {
+                    nearCounter++;
+                    combinedValueSum += (item.stockQty * item.unitCost);
+                }
+            });
+
+            document.getElementById('metric-total').innerText = expiredCounter + nearCounter;
+            document.getElementById('metric-expired').innerText = expiredCounter;
+            document.getElementById('metric-near').innerText = nearCounter;
+            document.getElementById('metric-value').innerText = combinedValueSum.toFixed(2) + " ETB";
+        }
+
+        // Simulates inventory adjustments write-off tracking closures
+       function purgeInventoryRow(batchId) {
+    if (confirm(`Are you certain you want to register batch (${batchId}) for complete chemical disposal write-off?`)) {
+
+        fetch("/passroot15", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                batchId: batchId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const targetIndex = drugInventoryData.findIndex(
+                    d => d.id_ === batchId
+                );
+
+                if (targetIndex !== -1) {
+                    drugInventoryData.splice(targetIndex, 1);
+                }
+
+                processInventoryFilters();
+        
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Server error.");
+        });
+    }
+}
+
+
+//-----------------------------------------------------------------------
+function downloadPDF() {
+
+    const rows = [...document.querySelectorAll("tr")];
+
+    const tableData = rows.map(row =>
+        [...row.querySelectorAll("th, td")]
+            .map(cell => cell.innerText.trim())
+    );
+
+    fetch("/generate_pdf", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            table: tableData
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Failed to generate PDF");
+    });
+}
+    </script>
+</body>
+</html>

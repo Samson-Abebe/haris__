@@ -21,7 +21,7 @@ def part_1(m):
     #expired______________________________
      today = datetime.now()
      future_date = today + timedelta(days=90)
-     m["Expired"]["noofn"]=mon_.count_documents({"expiry_date": {"$lt": future_date.strftime("%Y-%m-%d") }, "disposal_date": {"$exists": False}})
+     m["Expired"]["noofn"]=mon_.count_documents({"expiry_date": {"$lt": future_date.strftime("%Y-%m-%d") }, "disposal_date": {"$exists": False}, "amount": { "$gt": 0 }})
      #credit________________________________
      m["Credit"]["noofn"]=mon.count_documents({"stage":1,"credit_type": 'credit'})
      return m
@@ -30,7 +30,7 @@ def part_2(m):
     #-------------------------------------
     today = datetime.now()
     future_date = today + timedelta(days=90)
-    m["Expired"]["noofn"]=mon_.count_documents({"expiry_date": {"$lt": future_date.strftime("%Y-%m-%d") }, "disposal_date": {"$exists": False}})
+    m["Expired"]["noofn"]=mon_.count_documents({"expiry_date": {"$lt": future_date.strftime("%Y-%m-%d") }, "disposal_date": {"$exists": False}, "amount": { "$gt": 0 }})
     #-------------------------------------
     
     return m

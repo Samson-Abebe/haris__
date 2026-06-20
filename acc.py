@@ -29,7 +29,7 @@ drug_categories = {
 }
 Super_Admin={
     "Dashboard":{
-        "submenu":["Stocks","Staff","Edit","Customer","Add Staf"],
+        "submenu":["Stocks","Staff","Edit","Customer","Exhausted batch","Add Staf"],
         "icon":"fa-solid fa-gauge-high menu-icon-default",
         "noofn":False },
     
@@ -42,7 +42,7 @@ Super_Admin={
         "icon":"fa-solid fa-file-invoice-dollar menu-icon-default",
         "noofn":False},
     "Expired":{
-        "submenu":["Expired bellow 90d"],
+        "submenu":["Expired bellow 90d","Disposed"],
         "icon":"fa-solid fa-calendar-xmark menu-icon-default",
         "noofn":False},
     "Commution":{
@@ -68,11 +68,11 @@ Super_Admin={
 
 Store_Manager={
     "Product":{
-        "submenu":["Add Product","Rececivng Product","Issues","Stocks","Edit prices"],
+        "submenu":["Add Product","Rececivng Product","Issues","Stocks","Exhausted batch","Edit prices"],
         "icon":"fa-solid fa-box menu-icon-default",
         "noofn":False},
     "Expired":{
-        "submenu":["Expired bellow 90d"],
+        "submenu":["Expired bellow 90d","Disposed"],
         "icon":"fa-solid fa-calendar-xmark menu-icon-default",
         "noofn":50},
     "Report":{
